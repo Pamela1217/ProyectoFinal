@@ -171,6 +171,73 @@ server <- function(input, output, session) {
     video_juegos[video_juegos$Género_del_juego == input$genero_del_juego_plataforma, ]
   })
   
+  output$plot_genero <- renderPlot({
+    datos_genero <- datos_filtrados_genero()
+    
+    datos_resumen <- datos_genero |> 
+      group_by(Año_de_publicación) |> 
+      summarize(Ventas = sum(.data[[input$region]]), .groups = 'keep') |> 
+      arrange(desc(Ventas))
+    
+    top_3_fechas <- head(datos_resumen, 3)
+    
+    ggplot(top_3_fechas, aes(x = reorder(as.factor(Año_de_publicación), -Ventas), 
+                             y = Ventas, label = Ventas)) +
+      geom_bar(stat = "identity", fill = "gold", color = "black") +
+      geom_text(aes(label = Ventas), 
+                position = position_stack(vjust = 0.5),  
+                size = 5, color = "black") +
+      labs(
+        title = paste("Top 3 de Años con las ventas más altas de cartuchos"),
+        subtitle = "Se muestran los datos en Millones de cartuchos" ,
+        y = "Ventas",
+        x = "Año de Publicación"
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+  })
+  
+  
+  output$plot_plataforma <- renderPlot({
+    
+    datos_plataforma <- datos_filtrados_plataforma()
+    
+    if (!is.null(datos_plataforma)) {
+      
+      datos_resumen <- datos_plataforma |> 
+        
+        group_by(Año_de_publicación) |> 
+        
+        summarize(Ventas = sum(.data[[input$region_]]), .groups = 'keep') |> 
+        arrange(desc(Ventas))
+      
+      top_3_fechas <- head(datos_resumen, 3)
+      
+      g
+      gplot(top_3_fechas, aes(x = reorder(as.factor(Año_de_publicación), -Ventas), 
+                              y = Ventas, label = Ventas)) +
+        geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+        
+        geom_text(aes(label = Ventas), 
+                  position = position_stack(vjust = 0.5),  
+                  size = 5, color = "black") +
+        
+        labs(
+          title = paste("Top 3 de Años con las ventas más altas de cartuchos"),
+          subtitle = "Se muestran los datos en Millones",
+          y = "Ventas",
+          x = "Año de Publicación"
+        ) +
+        theme(
+          plot.title = element_text(hjust = 0.5, face = "bold")
+        )
+    } else {
+      
+      return(NULL)
+    }
+  })
+  
   
   
 }

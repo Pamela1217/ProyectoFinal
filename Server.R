@@ -237,7 +237,37 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-  
-  
+  output$plot_genero_plataforma <- renderPlot({
+    
+    datos_genero_plataforma <- datos_filtrados_genero_plataforma()
+    
+    datos_resumen_plataforma <- datos_genero_plataforma |> 
+      
+      group_by(Género_del_juego, Plataforma_del_juego) |> 
+      
+      summarize(Ventas = sum(.data[[input$region_]]), .groups = 'keep') |> 
+      
+      arrange(Género_del_juego, desc(Ventas)) |> 
+      
+      group_by(Género_del_juego) |> 
+      
+      top_n(5, wt = Ventas) |> 
+      mutate(Plataforma_del_juego = factor(Plataforma_del_juego, levels = Plataforma_del_juego[order(Ventas, decreasing = TRUE)]))
+    
+    ggplot(datos_resumen_plataforma, aes(x = Plataforma_del_juego, y = Ventas, fill = Género_del_juego, label = Ventas)) +
+      geom_bar(stat = "identity", position = "dodge") +
+      geom_text(position = position_dodge(0.9), vjust = -0.5, size = 5) +
+      
+      labs(
+        title = paste("Top 5 de Géneros con las ventas más altas de cartuchos"),
+        subtitle = "Se muestran los millones de cartuchos vendidos por género y plataforma",
+        y = "Ventas",
+        x = "Plataforma"
+      ) +
+      
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+  })
   
 }

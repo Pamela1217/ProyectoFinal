@@ -1,4 +1,5 @@
 server <- function(input, output, session) {
+
   
   video_juegos <- read.csv("C:/Users/Fabi Hidalgo/Desktop/CETAV/programacion I/mi_primer_repo/App_Libertad/datos/video_juegos.csv")
   
@@ -23,6 +24,17 @@ server <- function(input, output, session) {
   
   updateSelectInput(session, "año", 
                     choices = rev(order_years))
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("datos_", input$Año, ".csv", sep = ",")
+    },
+    content = function(file) {
+      data_filtered <- datos_filtrados_Año()
+      write.csv(data_filtered, file, row.names = FALSE)
+    }
+  )
+  
   
   observeEvent(input$Plataforma, {
     selected_platform <- input$Plataforma
@@ -115,9 +127,6 @@ server <- function(input, output, session) {
   })
   
   
-  datos_filtrados_Año <- eventReactive(input$filtro_Año, {
-    video_juegos[video_juegos$Año_de_publicación == input$Año, ]
-  })
   
   observe({
     updateSelectInput(session, "genero_del_juego_plataforma", 
@@ -125,18 +134,17 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
-  
   datos_filtrados_editor <- eventReactive(input$filtro_editor, {
     video_juegos[video_juegos$Editor_del_juego == input$editor, ]
   })
   
-  output$tabla_Año <- renderDataTable({
-    datos <- datos_filtrados_año()
+  
+  output$tabla_Año<- renderDataTable({  
+    datos <- datos_filtrados_Año()
     if (!is.null(datos)) {
       return(datos)
     }
+    
     return(data.frame()) 
   }, options = list(scrollX = TRUE))
   
@@ -157,6 +165,7 @@ server <- function(input, output, session) {
     return(data.frame()) 
   }, options = list(scrollX = TRUE))
   
+  
   datos_filtrados_genero <- eventReactive(input$filtro_genero, {
     video_juegos[video_juegos$Género_del_juego == input$genero_del_juego, ]
   })
@@ -175,6 +184,7 @@ server <- function(input, output, session) {
     video_juegos[video_juegos$Género_del_juego == input$genero_del_juego_plataforma, ]
   })
   
+  
   output$plot_genero <- renderPlot({
     datos_genero <- datos_filtrados_genero()
     
@@ -192,8 +202,8 @@ server <- function(input, output, session) {
                 position = position_stack(vjust = 0.5),  
                 size = 5, color = "black") +
       labs(
-        title = paste("Top 3 de Años con Más Ventas de Cartuchos por", input$genero_del_juego),
-        subtitle = "Se muestran los millones de cartuchos vendidos por año",
+        title = paste("Top 3 de Años con las ventas más altas de cartuchos"),
+        subtitle = "Se muestran los datos en Millones de cartuchos" ,
         y = "Ventas",
         x = "Año de Publicación"
       ) +
@@ -201,6 +211,7 @@ server <- function(input, output, session) {
         plot.title = element_text(hjust = 0.5, face = "bold")
       )
   })
+  
   
   output$plot_plataforma <- renderPlot({
     
@@ -239,29 +250,37 @@ server <- function(input, output, session) {
   })
   
   output$plot_genero_plataforma <- renderPlot({
+    
     datos_genero_plataforma <- datos_filtrados_genero_plataforma()
     
     datos_resumen_plataforma <- datos_genero_plataforma |> 
+      
       group_by(Género_del_juego, Plataforma_del_juego) |> 
+      
       summarize(Ventas = sum(.data[[input$region_]]), .groups = 'keep') |> 
+      
       arrange(Género_del_juego, desc(Ventas)) |> 
+      
       group_by(Género_del_juego) |> 
+      
       top_n(5, wt = Ventas) |> 
       mutate(Plataforma_del_juego = factor(Plataforma_del_juego, levels = Plataforma_del_juego[order(Ventas, decreasing = TRUE)]))
     
     ggplot(datos_resumen_plataforma, aes(x = Plataforma_del_juego, y = Ventas, fill = Género_del_juego, label = Ventas)) +
       geom_bar(stat = "identity", position = "dodge") +
-      geom_text(position = position_dodge(0.9), vjust = -0.5, size = 5, color = "black") +
+      geom_text(position = position_dodge(0.9), vjust = -0.5, size = 5) +
+      
       labs(
-        title = paste("Top 5 de Géneros con Más Ventas de Cartuchos por Plataforma"),
+        title = paste("Top 5 de Géneros con las ventas más altas de cartuchos"),
         subtitle = "Se muestran los millones de cartuchos vendidos por género y plataforma",
         y = "Ventas",
         x = "Plataforma"
       ) +
+      
       theme(
         plot.title = element_text(hjust = 0.5, face = "bold")
       )
   })
   
-  
 }
+  

@@ -2,6 +2,8 @@ server <- function(input, output, session) {
   
   video_juegos <- read.csv("C:/Users/Fabi Hidalgo/Desktop/CETAV/PROGRAMACIÓN II/ProyectoFinal/datos/video_juegos.csv")
   
+  # CORRIGE SEGÚN COMPUTADORA
+  
   video_juegos <- video_juegos |>
     rename(
       "Nombre_del_juego" = "Name",
@@ -124,7 +126,7 @@ server <- function(input, output, session) {
     video_juegos[video_juegos$Editor_del_juego == input$editor, ]
   })
   
-  #
+  
   
   output$tabla_Año<- renderDataTable({  
     datos <- datos_filtrados_Año()

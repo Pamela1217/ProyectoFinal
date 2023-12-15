@@ -15,4 +15,14 @@ server <- function(input, output, session) {
       "Otras_ventas" = "Other_Sales",
       "Ventas_mundiales_totales" = "Global_Sales"
     )
+  
+  order_years <- sort(unique(video_juegos$Año_de_publicación[video_juegos$Año_de_publicación != "N/A"]), decreasing = TRUE)
+  
+  updateSelectInput(session, "Año", 
+                    choices = order_years)
+  
+  updateSelectInput(session, "año", 
+                    choices = rev(order_years))
+  
+  
 }

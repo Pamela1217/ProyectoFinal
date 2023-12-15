@@ -96,6 +96,81 @@ server <- function(input, output, session) {
                       choices = unique(video_juegos$plataforma_del_juego))
   })
   
+  datos_filtrados_Año <- eventReactive(input$filtro_Año, {
+    video_juegos[video_juegos$Año_de_publicación == input$Año, ]
+  })
+  
+  datos_filtrados_año <- eventReactive(input$filtro_año, {
+    if (input$filtro_año > 0) {
+      if (input$año == "N/A") {
+        shinyalert(
+          title = "Sin Fecha",
+          text = "El año seleccionado no tiene fecha disponible.",
+          type = "info"
+        )
+      }
+      
+      filtered_data <- video_juegos[
+        video_juegos$Plataforma_del_juego == input$Plataforma &
+          video_juegos$Año_de_publicación == input$año, ]
+      
+      return(filtered_data)
+    }
+    return(NULL)
+  })
+  
+  
+  datos_filtrados_editor <- eventReactive(input$filtro_editor, {
+    video_juegos[video_juegos$Editor_del_juego == input$editor, ]
+  })
+  
+  #
+  
+  output$tabla_Año<- renderDataTable({  
+    datos <- datos_filtrados_Año()
+    if (!is.null(datos)) {
+      return(datos)
+    }
+    
+    return(data.frame()) 
+  }, options = list(scrollX = TRUE))
+  
+  output$tabla_plataforma <- renderDataTable({  
+    datos <- datos_filtrados_año()
+    if (!is.null(datos)) {
+      return(datos)
+    }
+    
+    return(data.frame()) 
+  }, options = list(scrollX = TRUE))
+  
+  output$tabla_editor <- renderDataTable({ 
+    datos <- datos_filtrados_editor()
+    if (!is.null(datos)) {
+      return(datos)
+    }
+    return(data.frame()) 
+  }, options = list(scrollX = TRUE))
+  
+  
+  datos_filtrados_genero <- eventReactive(input$filtro_genero, {
+    video_juegos[video_juegos$Género_del_juego == input$genero_del_juego, ]
+  })
+  
+  datos_filtrados_plataforma <- eventReactive(input$filtro_plataforma, {
+    if (input$filtro_plataforma > 0) {
+      filtered_data <- video_juegos[
+        video_juegos$Plataforma_del_juego == input$plataforma_del_juego, ]
+      
+      return(filtered_data)
+    }
+    return(NULL)
+  })
+  
+  datos_filtrados_genero_plataforma <- eventReactive(input$filtro_genero_plataforma, {
+    video_juegos[video_juegos$Género_del_juego == input$genero_del_juego_plataforma, ]
+  })
+  
   
   
 }
